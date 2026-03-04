@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinical UI Prototype V7</title>
+    <style>
+        :root {
+            --epic-blue: #2a739e;
+            --border-color: #cccccc;
+            --input-border: #a0a0a0;
+        }
+
+        body {
+            font-family: Tahoma, Verdana, sans-serif;
+            font-size: 11px;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        h2 { color: #444; font-size: 14px; margin-top: 0; }
+
+        .nav-container { display: flex; gap: 10px; margin-bottom: 10px; }
+
+        .epic-btn {
+            background: linear-gradient(to bottom, #ffffff, #e6e6e6);
+            border: 1px solid #999;
+            padding: 5px 12px;
+            cursor: pointer;
+            color: var(--epic-blue);
+            font-weight: bold;
+            font-size: 11px;
+            border-radius: 2px;
+        }
+
+        .epic-btn.active { 
+            background: var(--epic-blue); 
+            color: white !important; 
+            border-color: #1a4a66; 
+        }
+
+        #sub-nav-container { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+
+        .sub-nav-group {
+            background: #fff;
+            padding: 10px;
+            border: 1px solid #ddd;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .doc-section {
+            background: white;
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            margin-bottom: 12px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .movement-header {
+            font-weight: bold;
+            color: var(--epic-blue);
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 10px;
+            padding-bottom: 4px;
+            text-transform: uppercase;
+            font-size: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .doc-row { display: flex; align-items: center; gap: 15px; white-space: nowrap; margin-bottom: 8px; }
+
+        .side-label { width: 45px; font-weight: bold; font-size: 11px; }
+
+        input[type="text"] { border: 1px solid var(--input-border); padding: 3px 5px; font-size: 11px; }
+
+        .num-box { width: 50px; }
+        .symptom-box { width: 450px; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <h2>Documentation Tester: Order-Consistent Workflow</h2>
+
+    <div id="method-c">
+        <div class="nav-container">
+            <button class="epic-btn" id="btn-Shoulder" onclick="toggleJoint('Shoulder', this)">Shoulder</button>
+            <button class="epic-btn" id="btn-Elbow" onclick="toggleJoint('Elbow', this)">Elbow</button>
+            <button class="epic-btn" id="btn-Wrist" onclick="toggleJoint('Wrist', this)">Wrist</button>
+        </div>
+
+        <div id="sub-nav-container">
+            <div id="group-Shoulder" class="sub-nav-group hidden"></div>
+            <div id="group-Elbow" class="sub-nav-group hidden"></div>
+            <div id="group-Wrist" class="sub-nav-group hidden"></div>
+        </div>
+
+        <div id="doc-workspace"></div>
+    </div>
+
+    <script>
+        // Master list defines the "Correct Order"
+        const movements = {
+            'Shoulder': ["Shoulder Flexion", "Shoulder Extension", "Shoulder Abduction", "Shoulder Scaption", "Shoulder horizontal abduction", "Shoulder Horizontal Adduction", "Shoulder ER", "Shoulder IR", "Shoulder ER in 90 deg Abd", "Shoulder IR in 90 deg Abd"],
+            'Elbow': ["Elbow Flexion", "Elbow Extension", "Elbow Supination", "Elbow Pronation"],
+            'Wrist': ["Wrist Flexion", "Wrist Extension", "Wrist Radial Deviation", "Wrist Ulnar Deviation"]
+        };
+
+        // Flat array of all names for indexing the sort order
+        const masterOrder = [...movements.Shoulder, ...movements.Elbow, ...movements.Wrist];
+
+        window.onload = () => {
+            Object.keys(movements).forEach(joint => {
+                const groupDiv = document.getElementById('group-' + joint);
+                movements[joint].forEach(move => {
+                    const moveBtn = document.createElement('button');
+                    moveBtn.className = 'epic-btn';
+                    moveBtn.style.fontWeight = 'normal';
+                    moveBtn.innerText = move;
+                    moveBtn.id = 'btn-move-' + move.replace(/\s+/g, '-').toLowerCase();
+                    moveBtn.onclick = () => toggleMovement(move, moveBtn);
+                    groupDiv.appendChild(moveBtn);
+                });
+            });
+        };
+
+        function toggleJoint(joint, btn) {
+            const group = document.getElementById('group-' + joint);
+            group.classList.toggle('hidden');
+            btn.classList.toggle('active');
+        }
+
+        function toggleMovement(movementName, btn) {
+            const workspace = document.getElementById('doc-workspace');
+            const safeId = 'doc-' + movementName.replace(/\s+/g, '-').toLowerCase();
+            const existingSection = document.getElementById(safeId);
+
+            if (existingSection) {
+                existingSection.remove();
+                btn.classList.remove('active');
+            } else {
+                const section = document.createElement('div');
+                section.className = 'doc-section';
+                section.id = safeId;
+                section.setAttribute('data-order', masterOrder.indexOf(movementName));
+                
+                section.innerHTML = `
+                    <div class="movement-header">
+                        <span>${movementName}</span>
+                        <span style="font-size:9px; cursor:pointer;" onclick="removeDocSection('${safeId}', '${movementName}')">[X] Remove</span>
+                    </div>
+                    ${createSideRow('Left', movementName)}
+                    ${createSideRow('Right', movementName)}
+                `;
+                
+                workspace.appendChild(section); 
+                btn.classList.add('active');
+                sortWorkspace();
+            }
+        }
+
+        function sortWorkspace() {
+            const workspace = document.getElementById('doc-workspace');
+            const sections = Array.from(workspace.children);
+            
+            sections.sort((a, b) => {
+                return a.getAttribute('data-order') - b.getAttribute('data-order');
+            });
+
+            sections.forEach(section => workspace.appendChild(section));
+        }
+
+        function removeDocSection(id, movementName) {
+            const section = document.getElementById(id);
+            if(section) section.remove();
+            const btnId = 'btn-move-' + movementName.replace(/\s+/g, '-').toLowerCase();
+            const btn = document.getElementById(btnId);
+            if (btn) btn.classList.remove('active');
+        }
+
+        function createSideRow(side, movementName) {
+            const labelColor = side === 'Left' ? '#005a8c' : '#a94442';
+            return `
+                <div class="doc-row">
+                    <span class="side-label" style="color: ${labelColor}">${side}:</span>
+                    <div class="input-item"><input type="checkbox"> <label>WNL</label></div>
+                    <div class="input-item"><label>Active ROM:</label><input type="text" class="num-box"></div>
+                    <div class="input-item"><label>Passive ROM:</label><input type="text" class="num-box"></div>
+                    <div class="input-item"><label>Symptom Details:</label><input type="text" class="symptom-box"></div>
+                </div>`;
+        }
+    </script>
+</body>
+</html>

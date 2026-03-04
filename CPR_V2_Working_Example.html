@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'Segoe UI', system-ui, sans-serif; padding: 20px; background: #f0f4f8; color: #2d3748; }
+        .container { max-width: 700px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: #2b6cb0; border-bottom: 2px solid #ebf8ff; padding-bottom: 10px; margin-top: 0; }
+        
+        .test-row { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 12px 0; border-bottom: 1px solid #edf2f7; 
+        }
+        .test-info { flex: 1; }
+        .test-name { font-weight: 600; font-size: 0.95rem; display: block; }
+        .test-desc { font-size: 0.75rem; color: #718096; }
+
+        .input-box { display: flex; gap: 8px; margin-top: 5px; }
+        input { width: 65px; padding: 4px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 0.8rem; }
+
+        .split-btn {
+            display: flex; width: 130px; height: 34px; border: 2px solid #e2e8f0;
+            border-radius: 6px; overflow: hidden; cursor: pointer; flex-shrink: 0; margin-left: 15px;
+        }
+        .side {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            font-size: 10px; font-weight: 800; transition: 0.2s; background: #fff;
+        }
+        .left { border-right: 1px solid #e2e8f0; color: #a0aec0; }
+        .right { color: #a0aec0; }
+
+        .test-row[data-status="pos"] .left { background: #48bb78; color: white; }
+        .test-row[data-status="neg"] .right { background: #f56565; color: white; }
+        .test-row[data-status="pos"] .split-btn { border-color: #48bb78; }
+        .test-row[data-status="neg"] .split-btn { border-color: #f56565; }
+
+        .button-group { margin-top: 20px; display: flex; justify-content: flex-end; }
+        .clear-btn { 
+            background: #edf2f7; color: #4a5568; border: none; padding: 8px 16px; 
+            border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem;
+        }
+
+        #results-area { margin-top: 25px; display: flex; flex-direction: column; gap: 15px; }
+        .logic-output { 
+            padding: 15px; border-radius: 8px; background: #fff; 
+            border: 1px solid #e2e8f0; border-left: 4px solid #2b6cb0;
+        }
+        .logic-header { font-weight: bold; font-size: 0.85rem; text-transform: uppercase; color: #2b6cb0; margin-bottom: 5px; }
+        .needed-text { font-size: 0.85rem; color: #718096; }
+        .needed-text b { color: #e53e3e; font-weight: normal; }
+        .final-result { font-size: 1rem; color: #1a202c; font-weight: 600; line-height: 1.4; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Cervical Clinical Prediction Rules</h2>
+    
+    <div class="test-row" data-test="CCFT" data-status="none" data-group="CGH">
+        <div class="test-info">
+            <span class="test-name">Cranio-Cervical Flexion (CCFT)</span>
+            <span class="test-desc">Peak pressure and hold time:</span>
+            <div class="input-box"><input type="number" placeholder="mmHg" class="ccft-input"> <input type="number" placeholder="sec" class="ccft-input"></div>
+        </div>
+        <div class="split-btn" onclick="handleBtn(event, this, 'pos')" oncontextmenu="handleBtn(event, this, 'neg')">
+            <div class="side left">POS</div><div class="side right">NEG</div>
+        </div>
+    </div>
+
+    <div class="test-row" data-test="CFRT" data-status="none" data-group="CGH">
+        <div class="test-info">
+            <span class="test-name">Flexion-Rotation Test (CFRT)</span>
+            <span class="test-desc">Upper cervical (C1-C2) restriction</span>
+        </div>
+        <div class="split-btn" onclick="handleBtn(event, this, 'pos')" oncontextmenu="handleBtn(event, this, 'neg')">
+            <div class="side left">POS</div><div class="side right">NEG</div>
+        </div>
+    </div>
+
+    <div class="test-row" data-test="Distraction" data-status="none" data-group="RAD">
+        <div class="test-info">
+            <span class="test-name">Neck Distraction Test</span>
+            <span class="test-desc">Reduction of radicular symptoms</span>
+        </div>
+        <div class="split-btn" onclick="handleBtn(event, this, 'pos')" oncontextmenu="handleBtn(event, this, 'neg')">
+            <div class="side left">POS</div><div class="side right">NEG</div>
+        </div>
+    </div>
+
+    <div class="test-row" data-test="Mobility C1-3" data-status="none" data-group="CGH">
+        <div class="test-info">
+            <span class="test-name">Mobility Assessment (C1-C3)</span>
+            <span class="test-desc">Upper cervical segmental testing</span>
+        </div>
+        <div class="split-btn" onclick="handleBtn(event, this, 'pos')" oncontextmenu="handleBtn(event, this, 'neg')">
+            <div class="side left">POS</div><div class="side right">NEG</div>
+        </div>
+    </div>
+
+    <div class="test-row" data-test="Mobility C4-7" data-status="none" data-group="MISC">
+        <div class="test-info">
+            <span class="test-name">Mobility Assessment (C4-C7)</span>
+            <span class="test-desc">Lower cervical segmental testing</span>
+        </div>
+        <div class="split-btn" onclick="handleBtn(event, this, 'pos')" oncontextmenu="handleBtn(event, this, 'neg')">
+            <div class="side left">POS</div><div class="side right">NEG</div>
+        </div>
+    </div>
+
+    <div class="test-row" data-test="Rotation" data-status="none" data-group="RAD">
+        <div class="test-info">
+            <span class="test-name">Rotation < 60°</span>
+            <span class="test-desc">Ipsilateral rotation restriction</span>
+        </div>
+        <div class="split-btn" onclick="handleBtn(event, this, 'pos')" oncontextmenu="handleBtn(event, this, 'neg')">
+            <div class="side left">POS</div><div class="side right">NEG</div>
+        </div>
+    </div>
+
+    <div class="test-row" data-test="Spurling" data-status="none" data-group="RAD">
+        <div class="test-info">
+            <span class="test-name">Spurling's Test</span>
+            <span class="test-desc">Pain radiating into the extremity</span>
+        </div>
+        <div class="split-btn" onclick="handleBtn(event, this, 'pos')" oncontextmenu="handleBtn(event, this, 'neg')">
+            <div class="side left">POS</div><div class="side right">NEG</div>
+        </div>
+    </div>
+
+    <div class="test-row" data-test="ULTT" data-status="none" data-group="RAD">
+        <div class="test-info">
+            <span class="test-name">ULTT A (Median Nerve)</span>
+            <span class="test-desc">Neurodynamic provocation</span>
+        </div>
+        <div class="split-btn" onclick="handleBtn(event, this, 'pos')" oncontextmenu="handleBtn(event, this, 'neg')">
+            <div class="side left">POS</div><div class="side right">NEG</div>
+        </div>
+    </div>
+
+    <div class="button-group">
+        <button class="clear-btn" onclick="clearForm()">Clear All Documentation</button>
+    </div>
+
+    <div id="results-area"></div>
+</div>
+
+<script>
+    function handleBtn(e, btn, type) {
+        if (e.type === 'contextmenu') e.preventDefault();
+        const row = btn.parentElement;
+        if (type === 'pos' && e.type !== 'contextmenu') {
+            const rect = btn.getBoundingClientRect();
+            row.dataset.status = ((e.clientX - rect.left) < rect.width / 2) ? 'pos' : 'neg';
+        } else {
+            row.dataset.status = 'neg';
+        }
+        updateCalculation();
+    }
+
+    function clearForm() {
+        document.querySelectorAll('.test-row').forEach(row => row.dataset.status = 'none');
+        document.querySelectorAll('.ccft-input').forEach(input => input.value = '');
+        updateCalculation();
+    }
+
+    function updateCalculation() {
+        const rows = Array.from(document.querySelectorAll('.test-row'));
+        const container = document.getElementById('results-area');
+        container.innerHTML = ''; 
+
+        const groups = [
+            { id: 'RAD', name: 'Cervical Radiculopathy (Wainner)', tests: rows.filter(r => r.dataset.group === 'RAD') },
+            { id: 'CGH', name: 'Cervicogenic Headache (Jull)', tests: rows.filter(r => r.dataset.group === 'CGH') }
+        ];
+
+        groups.forEach(group => {
+            const documented = group.tests.filter(t => t.dataset.status !== 'none');
+            if (documented.length > 0) {
+                const pending = group.tests.filter(t => t.dataset.status === 'none').map(t => t.dataset.test);
+                const posCount = group.tests.filter(t => t.dataset.status === 'pos').length;
+                
+                const div = document.createElement('div');
+                div.className = 'logic-output';
+                let content = `<div class="logic-header">${group.name}</div>`;
+                
+                if (pending.length > 0) {
+                    content += `<div class="needed-text">Pending remaining: <b>${pending.join(', ')}</b></div>`;
+                } else {
+                    if (group.id === 'RAD') {
+                        // Corrected Wainner Specificity/LR Logic
+                        const stats = [
+                            { lr: '0.27', spec: '21%' }, // 1 positive
+                            { lr: '0.52', spec: '56%' }, // 2 positive
+                            { lr: '6.1',  spec: '94%' }, // 3 positive
+                            { lr: '30.3', spec: '99%' }  // 4 positive
+                        ];
+                        const s = stats[posCount-1] || { lr: '0.0', spec: 'N/A' };
+                        content += `<div class="final-result">${posCount}/4 Tests Positive<br>+LR: ${s.lr} | Specificity: ${s.spec}</div>`;
+                    } else {
+                        // CGH Cluster (CFRT, PA C1-3, CCFT)
+                        const spec = posCount === 3 ? "100%" : (posCount === 2 ? "94%" : "Unlikely");
+                        content += `<div class="final-result">${posCount}/3 Tests Positive<br>Specificity: ${spec}</div>`;
+                    }
+                }
+                div.innerHTML = content;
+                container.appendChild(div);
+            }
+        });
+    }
+</script>
+</body>
+</html>
