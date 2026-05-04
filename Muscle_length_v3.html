@@ -48,7 +48,7 @@
 
         .row-std {
             display: grid;
-            grid-template-columns: 220px 320px 200px 1fr; 
+            grid-template-columns: 220px 400px 200px 1fr; 
             column-gap: 15px;
             align-items: center;
             padding: 6px 15px;
@@ -83,6 +83,8 @@
         .label { font-weight: 500; }
 
         .tension-group { display: flex; gap: 2px; align-items: center; white-space: nowrap; }
+        .tension-group span { font-weight: normal; margin-right: 5px; color: #666; }
+        
         .btn { border: 1px solid #add8e6; background: var(--btn-blue); padding: 3px 8px; cursor: pointer; font-size: 11px; min-width: 62px; text-align: center; }
         .btn.active { background: var(--btn-active); color: white; border-color: #0056b3; }
 
@@ -123,7 +125,7 @@
     <div id="opt3-rows"></div>
 </div>
 
-<h1>Option 3: Dynamic Selector (click to try)</h1>
+<h1>Option 3: Dynamic Selector</h1>
 <div class="container">
     <div class="header"><span>Muscle Length Testing Option 2</span><span>⇅</span></div>
     <div class="selection-tray" id="opt2-tray"></div>
@@ -148,11 +150,12 @@
         const div = document.createElement('div');
         div.className = m.isHam ? 'row-std hamstring-row' : 'row-std';
         
+        // Added "Limitation: " text inside the tension-group
         if (m.isHam) {
             div.innerHTML = `
                 <div class="label">${m.name} ${side}</div>
                 <div class="col-group-span">
-                    <div class="tension-group"><button class="btn" onclick="actBtn(this)">Normal</button></div>
+                    <div class="tension-group"><span>Limitation:</span><button class="btn" onclick="actBtn(this)">Normal</button></div>
                     <div class="measurement-inputs">${m.inputs}</div>
                 </div>
                 <input type="text" class="comment-box" placeholder="Comment:">
@@ -160,7 +163,7 @@
         } else {
             div.innerHTML = `
                 <div class="label">${m.name} ${side}</div>
-                <div class="tension-group"><button class="btn" onclick="actBtn(this)">Normal</button><button class="btn" onclick="actBtn(this)">Mild</button><button class="btn" onclick="actBtn(this)">Moderate</button><button class="btn" onclick="actBtn(this)">Severe</button></div>
+                <div class="tension-group"><span>Limitation:</span><button class="btn" onclick="actBtn(this)">Normal</button><button class="btn" onclick="actBtn(this)">Mild</button><button class="btn" onclick="actBtn(this)">Moderate</button><button class="btn" onclick="actBtn(this)">Severe</button></div>
                 <div class="measurement-inputs">${m.inputs}</div>
                 <input type="text" class="comment-box" placeholder="Comment:">
             `;
@@ -195,7 +198,6 @@
         tray.appendChild(btn);
     });
 
-    // The Render function for the Dynamic Selector
     function renderOpt2() {
         const container = document.getElementById('opt2-rows');
         
@@ -210,7 +212,7 @@
             ['Left', 'Right'].forEach(side => container.appendChild(buildStandardRow(m, side)));
         });
 
-        // AUTO-SCROLL: Moves the view to the bottom of the container so new rows are visible
+        // SCROLL TO ABSOLUTE BOTTOM OF PAGE
         setTimeout(() => {
             window.scrollTo({
                 top: document.body.scrollHeight,
